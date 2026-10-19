@@ -2,12 +2,14 @@
 
 核对日期：2026-10-19。本报告从维护端同日的 `EVALUATOR_CODE_PROVENANCE_20261019.md` 移植整理，范围为独立评分服务的默认 `fusion-step-adapted-v3.0` 及保留的 v2 CLI。移除了维护机绝对路径、私有运行记录和跨 CLI 编排信息；原评分实现保持原始字节，复制清单见 [SOURCE_HASHES.json](SOURCE_HASHES.json)。
 
+本报告侧重代码、benchmark、论文与许可来源。每项完整公式、参数、备用路径和适配边界集中在 [当前指标、计算公式与来源适配](METRICS_AND_ADAPTATIONS.md)。
+
 ## 1. 主要结论
 
 1. **shape 的体积 IoU、Surface Distance F1、Topology Match 直接复用 CADGenBench 官方实现。** 本地把三项取均值，再以 30% 权重加入六项总分；这不是 CADGenBench 官方 CAD Score。
 2. distance 复用 CADGenBench 的 STEP 加载与表面采样，双向最近采样点距离 p99 的指数评分由本地协议定义，没有调用 DeepCAD 或 CADBench 的 Chamfer 评分器。
 3. v3 validation、dimension、mass、face_match、section 的验证/计分流程由本项目实现，调用 OCCT/OCP、SciPy、Open3D、trimesh 等计算库，并在部分路径复用 CADGenBench 网格/采样工具。工具来源不等于整个指标来源。
-4. 六项权重、通过 validation 后参与计分、缺失测量保守授分及证据合同属于本地规则。新 stdio MCP 只包装原评测入口，不修改算法。
+4. 六项权重、通过候选 validation 后参与计分、缺失测量保守授分及证据合同属于本地规则。新 stdio MCP 只包装原评测入口，不修改算法。
 
 “本项目实现”表示代码与评分规则的维护归属，不主张基础数学方法具有学术原创性。
 
@@ -55,6 +57,8 @@ Surface F1 的距离门限为 `max(1e-6 mm, .005 D_GT)`，法向实际代码使�
 
 [robust_metrics.validity](../src/robust_metrics.py#L155) 本地组合 `BRepCheck_Analyzer`、闭壳、正体积、`BOPAlgo_ArgumentAnalyzer` / `BOPAlgo_SelfIntersect`、`BRepAlgoAPI_Common` 等检查。正常接触和正体积干涉分开处理；检测故障不冒充已确认无效。v3 不依赖 CADGenBench validity 决定准入，shape 后端仍可能运行上游网格校验。
 
+先检查候选，再检查 GT。候选已有通过证据时，后续 GT 无效或 GT 检测失败不撤销候选参与资格；缺失参考测量按 v3 缺测政策处理。该检查集合不是几何完备性的数学证明。
+
 [metrics.dimension](../src/metrics.py#L123) 为通过标注项数 / 总项数；[dimension_probes.py](../src/dimension_probes.py) 覆盖圆柱直径与阵列、环面、圆锥、平面间距。探针来自本地旧 STEP 尺寸工具和 OCP 遍历方式，不是 DeepCAD/CADBench 官方参数准确率。当前 GT 派生探针、圆柱面计数不等于独立图纸/GD&T 真值或语义孔数。
 
 ### 4.2 distance
@@ -89,17 +93,19 @@ trimesh `triangles.mass_properties` 明确引用 David Eberly 的 [Polyhedral Ma
 
 它使用与 Surface F1 相同一类“距离 + 法向 + 双向 F1”思想，但公差、样本数、双种子、法向和调用路径属于本地版本，未直接调用上游 F1 函数；不是 Interface Match，也不再是 v2 的 BRep 面一一计数。它与 shape 有相关性，六项不能宣称完全独立。
 
+距离查询为点到另一网格表面，双方共用 GT 确定的挠度。当前只使用一个网格挠度，未执行此项的逐级网格收敛检查；两个 seed 的 F1 范围仅是敏感性诊断，不是误差保证或置信区间。
+
 ### 4.5 section
 
 [robust_metrics.section](../src/robust_metrics.py#L457) 在标注 h 两侧比较 `h ± delta`，`delta=max(.001 mm, 1e-5 D_GT)`，切面计划仅由参考冻结：
 
 ```text
-score_side = exp(-(relative_area_error+relative_perimeter_error)/.05)
+score_side_nonempty = exp(-(relative_area_error+relative_perimeter_error)/.05)
              * (contour_counts_equal ? 1 : .5)
 section = 每个标注两侧先平均，再对标注平均
 ```
 
-空截面有显式判定。原 [section.py](../src/section.py) 调用 OCCT 剖切和积分；失败时在**同一平面**使用 CADGenBench 网格化/trimesh 切面并检查细化收敛。切面选择、环组织、误差映射、轮廓惩罚和平均由本项目实现。该分比较面积、周长和轮廓数，不证明截面逐点相等。
+上述指数公式用于非空侧；双方面积为 0 得 1，仅一方为 0 得 0，v3 不读取 `expected_empty`。原 [section.py](../src/section.py) 调用 OCCT 剖切和积分；失败时在**同一平面**使用 CADGenBench 网格化/trimesh 切面并检查细化收敛。任一侧最终失败使整个 section 不可测，不只平均成功平面。切面选择、环组织、误差映射、轮廓惩罚和平均由本项目实现。该分比较面积、周长和轮廓数，不证明截面逐点相等。
 
 ## 5. 历史调研项目与当前代码区分
 
@@ -116,12 +122,12 @@ section = 每个标注两侧先平均，再对标注平均
 
 |模块|保留的 v2|默认 v3|
 |---|---|---|
-|validity|基本 BRep + CADGenBench artifacts 网格检查|本地 OCCT 完整门禁，与测量网格失败分开|
+|validity|基本 BRep + CADGenBench artifacts 网格检查|本地 OCCT 几何准入检查，与测量网格失败分开|
 |shape/distance/dimension|`src.metrics`|同一实现，未更换公式|
 |mass|既有 OCCT 积分和稳定性门控|更多积分/网格备用，指数公式等价保留|
 |face_match|解析面类型与门限、SciPy 一一匹配、面计数 F1|有限曲面面积覆盖 F1，语义已变化|
-|section|标注单平面，异常阻断|参考双侧切面和同平面备用，局部映射保留|
-|总分|完整资格和测量门控|validation 通过且证据有效即参与，缺失测量明确保守授分|
+|section|标注单平面，异常阻断|参考双侧切面和同平面备用，保留非空侧指数/环数惩罚，调整空截面分支|
+|总分|完整资格和测量门控|候选 validation 通过且证据有效即参与，缺失测量明确保守授分|
 
 不能把两版直接当成同一指标体系。缺失测量保持 `measured_score=null`、计入 `awarded_score=0`，标记 `policy_lower_bound` 并报告覆盖率；这不是虚构实测零分。
 

@@ -2,7 +2,9 @@
 
 独立 STEP 评分 CLI 与本地 stdio MCP 服务。输入 candidate STEP、reference STEP 和冻结标注 JSON，输出几何 validation、六项固定权重 v3 分数、测量覆盖率及完整审计文件。运行评分不需要 Autodesk Fusion、建模 CLI、模型账号或 `fusion_pipeline`。
 
-默认协议为 `fusion-step-adapted-v3.0`。本项目复用 CADGenBench 的三项 shape 指标及几何工具，六项总分属于本地适配协议，`ranking_eligible` 保持 `false`。详细定义见 [SCORING_V3](docs/SCORING_V3.md)、[来源报告](docs/EVALUATOR_CODE_PROVENANCE.md) 和 [架构](docs/ARCHITECTURE.md)。
+默认协议为 `fusion-step-adapted-v3.0`。本项目复用 CADGenBench 的三项 shape 指标及几何工具，六项总分属于本地适配协议，`ranking_eligible` 保持 `false`。
+
+**指标说明入口：[当前指标、计算公式、benchmark 来源与修改适配](docs/METRICS_AND_ADAPTATIONS.md)。** 包含六项指标及权重、validation 准入、算法公式与参数、备用路径、缺测计分示例，以及相对上游和 v2 的差异。快速规则见 [SCORING_V3](docs/SCORING_V3.md)，源码与论文证据见 [来源报告](docs/EVALUATOR_CODE_PROVENANCE.md)，服务结构见 [架构](docs/ARCHITECTURE.md)。
 
 ## 安装与 CLI
 
