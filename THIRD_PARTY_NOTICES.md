@@ -1,0 +1,11 @@
+# Third-party notices
+
+The source repository contains a selected, unmodified subset of [CADGenBench](https://github.com/huggingface/cadgenbench/tree/33304cf771fc5639144b1df9611e347251052cf8), copyright 2026 Hugging Face, under [Apache License 2.0](vendor/cadgenbench_LICENSE). Its 13 Python files retain the upstream headers. The upstream project metadata is preserved in [vendor/cadgenbench_pyproject.toml](vendor/cadgenbench_pyproject.toml). [SOURCE_HASHES.json](docs/SOURCE_HASHES.json) records the actual distributed source bytes.
+
+The dependencies in [requirements-evaluator.txt](requirements-evaluator.txt) are installed separately in a source checkout; their code and binary runtime are not included here. Installed distributions retain their respective licenses. The optional portable ZIP additionally carries its runtime dependency inventory and distribution license texts. Its inventory is the authority for the files actually bundled, not this source-only list.
+
+The `cadquery-ocp` Python wrapper's Apache license does not replace Open CASCADE Technology's LGPL 2.1 license and exception. The latter are retained in [licenses/occt-LICENSE_LGPL_21.txt](licenses/occt-LICENSE_LGPL_21.txt) and [licenses/occt-OCCT_LGPL_EXCEPTION.txt](licenses/occt-OCCT_LGPL_EXCEPTION.txt); their source URLs and hashes are in [licenses/UPSTREAM_SOURCES.json](licenses/UPSTREAM_SOURCES.json). Sources: [OCCT V7_8_1](https://github.com/Open-Cascade-SAS/OCCT/tree/V7_8_1), [CadQuery/OCP](https://github.com/CadQuery/OCP).
+
+When distributing a portable runtime, retain the license and notice files from Python and every bundled dependency, including embedded native components. OCCT DLLs remain separate replaceable files; applicable source availability and replacement/relinking rights remain in force. The source repository's local-code license does not override third-party rights.
+
+Autodesk Fusion, model CLIs, accounts, credentials, benchmark reference data and historical results are not part of this source repository.

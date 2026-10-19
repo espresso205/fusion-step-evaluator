@@ -1,0 +1,6 @@
+{
+  "allowed_input_roots": ["./inputs"],
+  "output_root": "./outputs",
+  "timeout_seconds": 600,
+  "max_active_jobs": 1
+}

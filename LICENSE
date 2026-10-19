@@ -1,0 +1,10 @@
+Local project code and documentation: all rights reserved by their respective
+copyright holders. This private repository does not grant a general license to
+redistribute or sublicense the local project code.
+
+This statement DOES NOT apply to third-party software. In particular, the
+unmodified files under vendor/cadgenbench are Copyright 2026 Hugging Face and
+licensed under Apache License 2.0; see vendor/cadgenbench_LICENSE. Their original
+headers and license remain in force. Dependency libraries and optional runtime
+components retain their own licenses and applicable rights, irrespective of
+this repository's private status. See THIRD_PARTY_NOTICES.md and licenses/.

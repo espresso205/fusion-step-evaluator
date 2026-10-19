@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+runtime/
+inputs/
+outputs/
+service.config.json
+.validation/
+tmp*/
+*.zip

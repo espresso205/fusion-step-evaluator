@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "note": "All listed files copied byte-for-byte; service and documentation are separate additions. Paths are relative to this repository.",
+  "files": [
+    {
+      "path": "evaluate.py",
+      "sha256": "dee26fb8fa8eb4e3a1ecf342afb2e641d341f63a0cf1422cb2638abb863a405c",
+      "bytes": 12765,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "worker.py",
+      "sha256": "21cc6ddbb484570bb3541063bdf00092e6b4ff595de8aeef71c5dbf9e2b14e7e",
+      "bytes": 8258,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "weights.json",
+      "sha256": "aadf01e74d754259e5fa0f8a3af877ba372a6c9a0ce731325331faf834903060",
+      "bytes": 1104,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "weights_v3.json",
+      "sha256": "d235dbf475a4f8ed3f75e21141e231c1beacc09c66cc280dd1bcbe96a50b1bc2",
+      "bytes": 1034,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "requirements-evaluator.txt",
+      "sha256": "050bed555ab70488746476a759c598b078e9abc396fafd2ef81ba0b7b2e4459c",
+      "bytes": 352,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "src/__init__.py",
+      "sha256": "a8637669d09fdc11093a04d9521a4109810a767952eb23a513a6a7d583355b6c",
+      "bytes": 80,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "src/contract.py",
+      "sha256": "13c58a1d53fbcd4353a9f20a4ee2276e0e630bf08621beed6f726a465f1ab798",
+      "bytes": 17772,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "src/contract_v3.py",
+      "sha256": "40eafdcb5fd98900256d57398eb3a905ed3bb5c46194c7f8939c85b100c53e82",
+      "bytes": 8933,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "src/dimension_probes.py",
+      "sha256": "8203100790cd11de786fd0b6963c8f4963dbb4a19397d7a3fa8f3027c0fc39fe",
+      "bytes": 9273,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "src/face_match.py",
+      "sha256": "2317588ee8f83d1cbdd5d30b946e27f59a9d86feeb640d5b5aa870bd8624d30e",
+      "bytes": 7314,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "src/io_utils.py",
+      "sha256": "a3409418fdafb04f3f49fa79bb2d4e845af9b12097893064c695fa173de4330a",
+      "bytes": 1150,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "src/metrics.py",
+      "sha256": "eb357aabf8009e174e95a98ba608ec220903b7abec39ef5f42919a48cf523cdf",
+      "bytes": 13407,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "src/reporting.py",
+      "sha256": "a5d8c78f52eaa2365365fcc17feaf5fc5b254d6358c01866b75ad2ee6e77e8a5",
+      "bytes": 11055,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "src/robust_metrics.py",
+      "sha256": "60c82b0f5a89c672416547e48eaaf427aa9fb4193b8445cd0e267d905b00d497",
+      "bytes": 23050,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "src/section.py",
+      "sha256": "65cd8983287b70c0a3c99581693c0c60b58489d22de7cb7f84bed20fcc121552",
+      "bytes": 9648,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "vendor/cadgenbench/__init__.py",
+      "sha256": "2773effbf4149809cdeac785b702eb00b219b5a3a1629a5b34ac474d5be0958a",
+      "bytes": 1019,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench/common/__init__.py",
+      "sha256": "adee9ebdfdd099157957a7df8fe29f740c09ab083299e1f13dba4b5f29acc9fc",
+      "bytes": 903,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench/common/artifacts.py",
+      "sha256": "0d6dedde5a1038734165b167b3f537a127d2319bdaf55da197b6a8cd61313cba",
+      "bytes": 16063,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench/common/measurements.py",
+      "sha256": "af1caca06bfcc03eb3beed8499f74e8b4e9e15f98be9a85e876d04d76b71234a",
+      "bytes": 4851,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench/common/mesh.py",
+      "sha256": "50b4312cf55bd4d6aaa3475f35f08879fc40f850b6b594f464814508c1df3a28",
+      "bytes": 31459,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench/common/profiling.py",
+      "sha256": "d6624a63e2cd149d7df4272b2d27878b748e471ec54627610d9f231dd14b7137",
+      "bytes": 3085,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench/common/validity.py",
+      "sha256": "981fc7efe8180088c7417ac3bf63854778b69f9b134cccb712e61281279f6bf3",
+      "bytes": 32892,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench/eval/__init__.py",
+      "sha256": "d0d37eebc885dbb7f54dfd39e5060c9ddb4f8a54aa804d15c547bbafddceedb8",
+      "bytes": 1531,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench/eval/alignment.py",
+      "sha256": "b128ebb92bf126b9418bc1661a5fc1e89f51e79bd1ef90c195263ff3036ebe7c",
+      "bytes": 18267,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench/eval/booleans.py",
+      "sha256": "1713637c56808130685375eb9f322c849cff428b1f8363c5c47b17bad2ee6000",
+      "bytes": 6073,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench/eval/sampling.py",
+      "sha256": "a765e65ab4fd02597bc6b6bdd4b50895e3aac3fb45493814d0d39bd650ea0251",
+      "bytes": 15163,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench/eval/shape_similarity.py",
+      "sha256": "71b737e36be53a64356535a79ffa55cc6aecfbc254e84809d1c595ae403179c8",
+      "bytes": 25876,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench/eval/topo_match.py",
+      "sha256": "e701330406696d9d55b96463e79510ac26b842173e3577ada04775955a07a043",
+      "bytes": 15250,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench_LICENSE",
+      "sha256": "b7c2666a39f34434177de540d73cfaa2968670311a5ad08dd94ee6637709acc9",
+      "bytes": 11386,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "vendor/cadgenbench_pyproject.toml",
+      "sha256": "d29d9cde48548b9236c2740d1dc7d7e8923bd89881692ceb37b5cf77c044f06e",
+      "bytes": 2704,
+      "source": "huggingface/cadgenbench@33304cf771fc5639144b1df9611e347251052cf8"
+    },
+    {
+      "path": "licenses/Apache-2.0.txt",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "licenses/occt-LICENSE_LGPL_21.txt",
+      "sha256": "e237fa56668030e928551ddd60f05df5fe957f75eab874bbd017e085ed722e7c",
+      "bytes": 26434,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "licenses/occt-OCCT_LGPL_EXCEPTION.txt",
+      "sha256": "04580a884ea6cea294402649ff7b5cbb167d47462d1340a4ed33e550db10a81b",
+      "bytes": 663,
+      "source": "maintenance snapshot 2026-10-19"
+    },
+    {
+      "path": "licenses/UPSTREAM_SOURCES.json",
+      "sha256": "a0ba2df08392f088bf02540031423e55ca8ad92c7db6000c443c3e7f2399d9c7",
+      "bytes": 684,
+      "source": "maintenance snapshot 2026-10-19"
+    }
+  ]
+}
