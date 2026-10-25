@@ -73,6 +73,7 @@ class ServiceTests(unittest.TestCase):
         self.output = self.root/'jobs'
         self.config = self.root/'config.json'
         self.config.write_text(json.dumps({'allowed_input_roots':['inputs'], 'output_root':'jobs',
+            'protocol':'fusion-step-adapted-v3.0',
             'timeout_seconds':120, 'max_active_jobs':1}), encoding='utf-8')
         self.client = Client(self.config)
         self.addCleanup(self.client.close)

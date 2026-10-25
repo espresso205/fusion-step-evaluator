@@ -1,5 +1,7 @@
 {
   "allowed_input_roots": ["./inputs"],
+  "protocol": "fusion-step-adapted-v4.0",
+  "coordinate_mode": "geometry",
   "output_root": "./outputs",
   "timeout_seconds": 600,
   "max_active_jobs": 1

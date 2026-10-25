@@ -1,10 +1,14 @@
 # Fusion STEP Evaluator
 
-独立 STEP 评分 CLI 与本地 stdio MCP 服务。输入 candidate STEP、reference STEP 和冻结标注 JSON，输出几何 validation、六项固定权重 v3 分数、测量覆盖率及完整审计文件。运行评分不需要 Autodesk Fusion、建模 CLI、模型账号或 `fusion_pipeline`。
+独立 STEP 评分 CLI 与本地 stdio MCP 服务。输入 candidate STEP、reference STEP 和冻结标注 JSON，输出几何 validation、v4 几何符合主分、独立坐标诊断、测量覆盖率及完整审计文件。运行评分不需要 Autodesk Fusion、建模 CLI、模型账号或 `fusion_pipeline`。
 
-默认协议为 `fusion-step-adapted-v3.0`。本项目复用 CADGenBench 的三项 shape 指标及几何工具，六项总分属于本地适配协议，`ranking_eligible` 保持 `false`。
+默认协议为 `fusion-step-adapted-v4.0`（`geometry` 模式）。本项目复用 CADGenBench 的三项 shape 指标及几何工具，shape/dimension/mass 总分属于本地适配协议，`ranking_eligible` 保持 `false`。
 
-**指标说明入口：[当前指标、计算公式、benchmark 来源与修改适配](docs/METRICS_AND_ADAPTATIONS.md)。** 包含六项指标及权重、validation 准入、算法公式与参数、备用路径、缺测计分示例，以及相对上游和 v2 的差异。快速规则见 [SCORING_V3](docs/SCORING_V3.md)，源码与论文证据见 [来源报告](docs/EVALUATOR_CODE_PROVENANCE.md)，服务结构见 [架构](docs/ARCHITECTURE.md)。
+**当前 v4 规则：[几何符合、坐标诊断与精简指标](docs/SCORING_V4.md)。** 显式 v3 保留原算法与固定世界坐标。
+
+**历史 v3 指标说明入口：[当前指标、计算公式、benchmark 来源与修改适配](docs/METRICS_AND_ADAPTATIONS.md)。** 包含六项指标及权重、validation 准入、算法公式与参数、备用路径、缺测计分示例，以及相对上游和 v2 的差异。快速规则见 [SCORING_V3](docs/SCORING_V3.md)，源码与论文证据见 [来源报告](docs/EVALUATOR_CODE_PROVENANCE.md)，服务结构见 [架构](docs/ARCHITECTURE.md)。
+
+**离线指标消融：** 使用 `python -B analyze_ablation.py --input <已完成结果目录> --output <新分析目录>`，读取已有 v4、v3 或历史六指标结果，输出两种 leave-one-out、相关矩阵和排序变化的 JSON/CSV/Markdown。仅需 Python 标准库，不重跑几何、不调整正式权重。格式与缺测规则见 [消融说明](docs/ABLATION.md)。
 
 ## 安装与 CLI
 
@@ -25,7 +29,7 @@ $env:FUSION_STEP_PYTHON = (Resolve-Path .\.venv\Scripts\python.exe).Path
 .\evaluate.cmd --cases inputs/box-example/cases.json --output outputs/box-example
 ```
 
-每次 `--output` 必须是新目录。也可以直接执行 `python -B evaluate.py --cases ... --output ...`，默认 v3。CLI 保留显式 `--protocol fusion-step-adapted-v2.0` 的历史兼容；MCP 固定 v3。`--timeout` 为逐题进程树超时秒数，`--workers` 为 1–4。
+每次 `--output` 必须是新目录。也可以直接执行 `python -B evaluate.py --cases ... --output ...`，默认 v4/geometry。`--coordinate-mode strict` 使用原世界坐标；显式 `--protocol fusion-step-adapted-v3.0` 或 v2.0 保留历史兼容；MCP 配置默认 v4。`--timeout` 为逐题进程树超时秒数，`--workers` 为 1–4。
 
 manifest 格式：
 
@@ -45,7 +49,7 @@ manifest 格式：
 }
 ```
 
-三个输入路径均须为绝对路径。标注还须携带 `gt_sha256`，与参考 STEP 的原始字节对应；不能为绕过校验而自动改写已有标注的哈希。标注结构可参考 [合成示例](examples/make_box_fixture.py)，支持的尺寸探针在 [dimension_probes.py](src/dimension_probes.py)。全部输入使用固定世界毫米坐标。
+三个输入路径均须为绝对路径。标注还须携带 `gt_sha256`，与参考 STEP 的原始字节对应；不能为绕过校验而自动改写已有标注的哈希。标注结构可参考 [合成示例](examples/make_box_fixture.py)，支持的尺寸探针在 [dimension_probes.py](src/dimension_probes.py)。输入单位归一为毫米；geometry 只对派生副本做刚体对齐，strict 保持原世界坐标。
 
 ## MCP 使用
 
@@ -75,7 +79,7 @@ Copy-Item service.config.example.json service.config.json
 |工具|参数|结果|
 |---|---|---|
 |`capabilities`|无|协议、权重、路径边界和并行/超时限制|
-|`evaluate`|`candidate`、`gt`、`annotations` 绝对路径；可选 `case`|立即返回 `job_id`；后台启动独立评分进程|
+|`evaluate`|`candidate`、`gt`、`annotations` 绝对路径；可选 `case`、`protocol`、`coordinate_mode`|立即返回 `job_id`；后台启动独立评分进程|
 |`status`|可选 `job_id`|单个任务状态；省略则列出本服务会话任务|
 |`results`|`job_id`|任务最终状态、完整 `summary` 与报告/manifest/aggregate/log 文件路径|
 
@@ -91,9 +95,9 @@ Copy-Item service.config.example.json service.config.json
 
 ## 输出和故障判读
 
-每次 CLI 输出 `manifest.json`、`summary.json`、`report.md`、`comparison.csv`，每题保留 `aggregate.json`、七模块 `results/*.json`、输入快照、worker 日志、validation/参考预检和切面计划。MCP 在任务目录外层另保存 `cases.json`、`job_status.json`、`evaluator.log`。以最终 summary/aggregate 为准，`provisional.json` 是尚未通过批次完整性核验的临时结果。
+每次 CLI 输出 `manifest.json`、`summary.json`、`report.md`、`comparison.csv`，每题保留 `aggregate.json`、计分/诊断及姿态 `results/*.json`、输入快照、worker 日志、validation/参考预检和切面计划。MCP 在任务目录外层另保存 `cases.json`、`job_status.json`、`evaluator.log`。以最终 summary/aggregate 为准，`provisional.json` 是尚未通过批次完整性核验的临时结果。
 
-`completed` 表示评分 CLI 成功结束且存在 v3 summary，并不意味着几何达到任何业务阈值。`failed` 的任务也可能有可诊断 summary。退出码 2 可能来自候选无效、完整性故障或评测无法完成，必须结合 `validation_passed`、`execution`、`reasons` 判读。通过 validation 但部分测量不可用的 v3 候选仍可能成功完成；其 `measured_score=null`、`awarded_score=0`，总分标注 `policy_lower_bound`。
+`completed` 表示评分 CLI 成功结束且存在对应协议的 summary，并不意味着几何达到任何业务阈值。`failed` 的任务也可能有可诊断 summary。退出码 2 可能来自候选无效、完整性故障或评测无法完成，必须结合 `validation_passed`、`execution`、`reasons` 判读。通过 validation 但部分正式计分测量不可用的 v4/v3 候选仍可能成功完成；相应计分项保持 `measured_score=null`、`awarded_score=0`，总分标注 `policy_lower_bound`。v4 诊断项始终 `awarded_score=null`；仅诊断缺测不改变主分覆盖或分数类型，执行超时仍单独报告。
 
 参考 STEP、标注和评分结果属于评分服务端数据。需要盲评时，请把此 MCP 连接给评测角色，并单独管理建模角色可访问的资料。
 
@@ -104,6 +108,6 @@ $env:RUN_GEOMETRY_TESTS = '1'
 & $env:FUSION_STEP_PYTHON -B -m unittest discover -s tests -v
 ```
 
-测试真实 stdio 协议、配置/路径错误、无效 STEP、合成盒体和缺失尺寸测量的 v3 政策；不会调用 Fusion 或任何模型。未设置 `RUN_GEOMETRY_TESTS=1` 时两个真实有效几何用例跳过；无效 STEP 失败用例仍启动真实评测子进程。详见 [测试记录](docs/TESTING.md)。
+测试真实 stdio 协议、配置/路径错误、无效 STEP、合成盒体和缺失尺寸测量的 v3 政策；不会调用 Fusion 或任何模型。未设置 `RUN_GEOMETRY_TESTS=1` 时服务端部分真实有效几何用例跳过，几何适配单元测试仍需要评分依赖；无效 STEP 失败用例仍启动真实评测子进程。详见 [测试记录](docs/TESTING.md)。
 
-评分入口、`src/`、精选 vendor 和权重与维护快照保持原始字节一致，见 [SOURCE_HASHES](docs/SOURCE_HASHES.json)。MCP 和启动器是独立新增文件。依赖文件列出直接版本，并非完整传递锁文件。便携包接收约定见 [PACKAGING](docs/PACKAGING.md)。本地工程代码保留权利，第三方各自许可见 [LICENSE](LICENSE) 和 [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)。
+v3 算法与精选 vendor 保持原始字节；v4 新增适配模块和协议路由已单列来源，见 [SOURCE_HASHES](docs/SOURCE_HASHES.json)。MCP 和启动器是独立新增文件。依赖文件列出直接版本，并非完整传递锁文件。便携包接收约定见 [PACKAGING](docs/PACKAGING.md)。本地工程代码保留权利，第三方各自许可见 [LICENSE](LICENSE) 和 [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)。

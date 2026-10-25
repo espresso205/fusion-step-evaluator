@@ -1,5 +1,7 @@
 # STEP 评测器代码与指标来源报告
 
+2026-10-26 补充：默认协议更新为 [v4](SCORING_V4.md)。新增 evaluate_v4.py、worker_v4.py 与 src/*_v4.py 为本项目实现；evaluate.py 仅增加协议路由。下文保存 v3 历史来源说明，旧清单为 [SOURCE_HASHES_V3.json](SOURCE_HASHES_V3.json)，当前文件来源/哈希见 [SOURCE_HASHES.json](SOURCE_HASHES.json)。CADGenBench vendor 文件未修改；v4 包装层复用其刚体对齐及三项指标，调整姿态、可靠尺度与计分项角色，这些适配均不声称为官方总分。
+
 核对日期：2026-10-19。本报告从维护端同日的 `EVALUATOR_CODE_PROVENANCE_20261019.md` 移植整理，范围为独立评分服务的默认 `fusion-step-adapted-v3.0` 及保留的 v2 CLI。移除了维护机绝对路径、私有运行记录和跨 CLI 编排信息；原评分实现保持原始字节，复制清单见 [SOURCE_HASHES.json](SOURCE_HASHES.json)。
 
 本报告侧重代码、benchmark、论文与许可来源。每项完整公式、参数、备用路径和适配边界集中在 [当前指标、计算公式与来源适配](METRICS_AND_ADAPTATIONS.md)。

@@ -18,7 +18,8 @@ import time
 import uuid
 
 BASE = Path(__file__).resolve().parent
-PROTOCOL = 'fusion-step-adapted-v3.0'
+PROTOCOL = 'fusion-step-adapted-v4.0'
+SUPPORTED_PROTOCOLS = ('fusion-step-adapted-v3.0', PROTOCOL)
 MCP_VERSIONS = ('2025-06-18', '2025-03-26', '2024-11-05')
 MAX_MESSAGE = 1024 * 1024
 
@@ -45,9 +46,24 @@ def object_schema(properties, required=()):
 
 
 STRING = {'type':'string','minLength':1}
+PROTOCOL_SCHEMA = {'type':'string','enum':list(SUPPORTED_PROTOCOLS)}
+COORDINATE_SCHEMA = {'type':'string','enum':['geometry','strict']}
+
+
+def scoring_options(config):
+    protocol = config.get('protocol', PROTOCOL)
+    if protocol not in SUPPORTED_PROTOCOLS:
+        raise ValueError('unsupported scoring protocol')
+    mode = config.get('coordinate_mode', 'geometry' if protocol==PROTOCOL else 'strict')
+    if mode not in ('geometry','strict') or protocol!=PROTOCOL and mode!='strict':
+        raise ValueError('coordinate_mode must be geometry/strict; v3 requires strict')
+    return protocol, mode
+
+
 TOOLS = [
     {'name':'evaluate','description':'Evaluate one candidate STEP against a reference and frozen annotations. Returns a job_id; poll status, then results.',
-     'inputSchema':object_schema({'candidate':STRING,'gt':STRING,'annotations':STRING,'case':STRING},('candidate','gt','annotations'))},
+     'inputSchema':object_schema({'candidate':STRING,'gt':STRING,'annotations':STRING,'case':STRING,
+                                 'protocol':PROTOCOL_SCHEMA,'coordinate_mode':COORDINATE_SCHEMA},('candidate','gt','annotations'))},
     {'name':'status','description':'Read a job state, or list jobs submitted in this server session.',
      'inputSchema':object_schema({'job_id':STRING})},
     {'name':'results','description':'Read the complete final summary and paths to all persisted evidence for a finished job.',
@@ -61,9 +77,10 @@ class Service:
     def __init__(self, config_path):
         config_path = Path(config_path).resolve(strict=True)
         config = read_json(config_path)
-        allowed = {'allowed_input_roots','output_root','python','timeout_seconds','max_active_jobs'}
+        allowed = {'allowed_input_roots','output_root','python','timeout_seconds','max_active_jobs','protocol','coordinate_mode'}
         if not isinstance(config,dict) or set(config)-allowed:
             raise ValueError('configuration must be an object with documented keys only')
+        self.protocol, self.coordinate_mode = scoring_options(config)
 
         def configured_path(value):
             if not isinstance(value,str) or not value:
@@ -104,9 +121,14 @@ class Service:
         return path
 
     def capabilities(self):
-        return {'protocol_id':PROTOCOL,'ranking_eligible':False,
-            'weights':read_json(BASE/'weights_v3.json')['weights'],
-            'coordinate_frame':'fixed_world_mm','transport':'stdio',
+        is_v4 = self.protocol == PROTOCOL
+        return {'protocol_id':self.protocol,'ranking_eligible':False,
+            'supported_protocols':list(SUPPORTED_PROTOCOLS), 'coordinate_mode':self.coordinate_mode,
+            'supported_coordinate_modes':['geometry','strict'] if is_v4 else ['strict'],
+            'weights':read_json(BASE/('weights_v4.json' if is_v4 else 'weights_v3.json'))['weights'],
+            'scored_metrics':['shape','dimension','mass'] if is_v4 else ['shape','dimension','distance','mass','face_match','section'],
+            'diagnostic_metrics':['distance','face_match','section'] if is_v4 else [],
+            'coordinate_frame':'rigid_aligned_mm' if self.coordinate_mode=='geometry' else 'fixed_world_mm','transport':'stdio',
             'allowed_input_roots':[str(p) for p in self.input_roots],
             'output_root':str(self.output_root),'python':str(self.python),
             'timeout_seconds':self.timeout,'max_active_jobs':self.max_jobs,
@@ -115,6 +137,12 @@ class Service:
             'score_policy':'validation passed and integrity verified; unavailable measurements award zero with explicit policy_lower_bound'}
 
     def evaluate(self, arguments):
+        options = {'protocol':arguments.get('protocol', self.protocol)}
+        if 'coordinate_mode' in arguments:
+            options['coordinate_mode'] = arguments['coordinate_mode']
+        elif options['protocol'] == self.protocol:
+            options['coordinate_mode'] = self.coordinate_mode
+        protocol, coordinate_mode = scoring_options(options)
         case = arguments.get('case','case')
         if not isinstance(case,str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,63}',case):
             raise ValueError('case must be 1-64 letters, digits, underscore or hyphen, starting with a letter or digit')
@@ -133,6 +161,7 @@ class Service:
             folder.mkdir(exist_ok=False)
             write_json(folder/'cases.json',{'cases':[{'case':case,**{r:str(p) for r,p in inputs.items()},'expected_hashes':hashes}]})
             job = {'job_id':job_id,'case':case,'state':'queued','submitted_at':time.time(),
+                   'protocol_id':protocol,'coordinate_mode':coordinate_mode,
                    'job_directory':str(folder),'output_directory':str(folder/'evaluation')}
             self.jobs[job_id] = job
             write_json(folder/'job_status.json',job)
@@ -155,9 +184,12 @@ class Service:
             options = {'creationflags':subprocess.CREATE_NO_WINDOW} if os.name=='nt' else {'start_new_session':True}
             with (folder/'evaluator.log').open('w',encoding='utf-8') as log:
                 env = dict(os.environ, PYTHONDONTWRITEBYTECODE='1', PYTHONUTF8='1')
-                proc = subprocess.Popen([str(self.python),'-B',str(BASE/'evaluate.py'),
+                command = [str(self.python),'-B',str(BASE/'evaluate.py'),
                     '--cases',str(folder/'cases.json'),'--output',job['output_directory'],
-                    '--protocol',PROTOCOL,'--timeout',str(self.timeout),'--workers','1'],
+                    '--protocol',job['protocol_id'],'--timeout',str(self.timeout),'--workers','1']
+                if job['protocol_id'] == PROTOCOL:
+                    command += ['--coordinate-mode',job['coordinate_mode']]
+                proc = subprocess.Popen(command,
                     stdout=log,stderr=subprocess.STDOUT,stdin=subprocess.DEVNULL,cwd=BASE,env=env,**options)
                 timed_out = False
                 try:
@@ -172,7 +204,8 @@ class Service:
             summary_path = Path(job['output_directory'])/'summary.json'
             summary = read_json(summary_path) if summary_path.is_file() else None
             completed = (not timed_out and returncode==0 and isinstance(summary,dict)
-                         and summary.get('protocol_id')==PROTOCOL)
+                         and summary.get('protocol_id')==job['protocol_id']
+                         and (job['protocol_id'] != PROTOCOL or summary.get('coordinate_mode')==job['coordinate_mode']))
             self.update(job_id,state='completed' if completed else 'failed',returncode=returncode,
                         timed_out=timed_out,finished_at=time.time(),summary_available=isinstance(summary,dict))
         except Exception as exc:
@@ -209,6 +242,10 @@ class Service:
             raise ValueError('unexpected or missing tool arguments')
         if any(not isinstance(v,str) or not v for v in arguments.values()):
             raise ValueError('tool arguments must be nonempty strings')
+        for key,value in arguments.items():
+            choices = schema['properties'][key].get('enum')
+            if choices is not None and value not in choices:
+                raise ValueError('unsupported '+key)
         if name=='capabilities':
             return self.capabilities()
         return getattr(self,name)(arguments)
