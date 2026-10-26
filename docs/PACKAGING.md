@@ -8,7 +8,7 @@
 
 发布构建器对所有最终文件产生 SHA256 清单/manifest，压缩后重新核对 ZIP 内容。`docs/SOURCE_HASHES.json` 验证算法来源字节，发布清单验证最终分发字节；两者目的不同。打包必须从受控源码文件集读取，不能递归复制工作目录中的 `inputs/`、`outputs/`、`.validation/`、venv 或已有 runtime。
 
-HTML 报告需要保留 `render_report.py`、`serve_report.py`、`src/report_data.py`、`src/report_inputs.py`、`src/html_reporting.py`、`src/display_assets.py`、`src/display_mesh.py`、`src/display_worker.py` 及完整 `report_assets/`。静态资源包含本地 Three.js、CADViewer 适配模块、来源记录和两份 MIT 许可；不得省略 `report_assets/licenses/CADViewer-MIT.txt` 或 `report_assets/licenses/Three-MIT.txt`。同时分发 [HTML 使用说明](HTML_REPORT.md)和 [第三方说明](../THIRD_PARTY_NOTICES.md)。生成的报告及其 GT 预览属于运行结果，不打入源码或通用便携包。
+HTML 报告需要保留 `render_report.py`、`serve_report.py`、`src/report_data.py`、`src/report_inputs.py`、`src/html_reporting.py`、`src/display_assets.py`、`src/display_mesh.py`、`src/display_worker.py`、`src/display_comparison.py`、`src/report_interfaces.py`、`src/report_downloads.py` 及完整 `report_assets/`。静态资源包含本地 Three.js、CADViewer 适配模块、来源记录和两份 MIT 许可；不得省略 `report_assets/licenses/CADViewer-MIT.txt` 或 `report_assets/licenses/Three-MIT.txt`。同时分发 [HTML 使用说明](HTML_REPORT.md)和 [第三方说明](../THIRD_PARTY_NOTICES.md)。生成的报告及其 GT 预览属于运行结果，不打入源码或通用便携包。
 
 便携验收应从含空格的新解压目录执行以下动作：
 
