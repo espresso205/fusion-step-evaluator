@@ -10,6 +10,10 @@
 
 **离线指标消融：** 使用 `python -B analyze_ablation.py --input <已完成结果目录> --output <新分析目录>`，读取已有 v4、v3 或历史六指标结果，输出两种 leave-one-out、相关矩阵和排序变化的 JSON/CSV/Markdown。仅需 Python 标准库，不重跑几何、不调整正式权重。格式与缺测规则见 [消融说明](docs/ABLATION.md)。
 
+**HTML 结果报告：** v4 自动生成 `html-report/index.html`，以左侧生成模型、右侧标准答案展示模型差异、分数和评测分析。可用 `python -B render_report.py --input <最终结果目录> --output <新报告目录>` 重建，`--analysis <ablation.json>` 加入已有分析，`--no-mesh` 生成纯分数报告。直接打开 HTML 可离线阅读；`python -B serve_report.py --root <报告目录> --open` 启动本机三维对比。详见 [HTML 报告](docs/HTML_REPORT.md)。
+
+已发布示例：[下载 CADGenBench 18 题重评 HTML 报告](https://github.com/espresso205/fusion-step-evaluator/releases/download/html-report-20261026/cadgenbench-v4-html-report-20261026.zip)，包含静态预览、三维对比、各项分数和指标分析。解压后打开 `index.html`；[本次结果与使用说明](docs/HTML_REPORT_RELEASE_20261026.md)。
+
 ## 安装与 CLI
 
 源码仓库不包含 Python runtime、参考数据或历史评测结果。已验证环境为 Windows x64 / Python 3.12。新建环境并安装依赖：

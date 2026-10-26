@@ -32,6 +32,22 @@ class McpV4Tests(unittest.TestCase):
             self.assertTrue(self.client.tool('evaluate',dict(args,**options))['isError'])
         self.assertEqual(self.client.tool('status')['structuredContent']['jobs'],[])
 
+    def test_results_only_advertise_existing_html_files(self):
+        from mcp_server import Service
+        service=Service(self.root/'config.json')
+        output=self.root/'finished'
+        output.mkdir()
+        service.jobs['fixture']={'job_id':'fixture','case':'box','state':'completed',
+            'output_directory':str(output),'job_directory':str(self.root)}
+        missing=service.results({'job_id':'fixture'})['files']
+        self.assertNotIn('html',missing)
+        self.assertNotIn('html_report_status',missing)
+        status=output/'html-report-generation.json'
+        status.write_text('{"status":"failed"}',encoding='utf-8')
+        failed=service.results({'job_id':'fixture'})['files']
+        self.assertNotIn('html',failed)
+        self.assertEqual(failed['html_report_status'],str(status))
+
     @unittest.skipUnless(os.environ.get('RUN_GEOMETRY_TESTS')=='1','real v4 OCCT integration')
     def test_real_v4_box_results_retain_coordinate_and_roles(self):
         args=self.fixture(valid_step=True)
@@ -47,6 +63,8 @@ class McpV4Tests(unittest.TestCase):
         self.assertAlmostEqual(case['final_score'],1.,places=5)
         self.assertEqual(case['metrics']['section']['metric_role'],'diagnostic')
         self.assertIsNone(case['metrics']['section']['awarded_score'])
+        self.assertTrue(Path(result['files']['html']).is_file())
+        self.assertTrue(Path(result['files']['html_report_status']).is_file())
 
 
 if __name__=='__main__':

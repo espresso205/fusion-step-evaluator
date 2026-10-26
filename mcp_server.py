@@ -227,6 +227,8 @@ class Service:
         folder = Path(job['output_directory'])
         paths = {'summary':folder/'summary.json','manifest':folder/'manifest.json',
             'report':folder/'report.md','comparison':folder/'comparison.csv',
+            'html':folder/'html-report'/'index.html',
+            'html_report_status':folder/'html-report-generation.json',
             'aggregate':folder/job['case']/'aggregate.json',
             'log':Path(job['job_directory'])/'evaluator.log',
             'status':Path(job['job_directory'])/'job_status.json'}
